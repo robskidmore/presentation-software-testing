@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>Let's Talk About Testing</h2>
+				</section>
+				<section data-background-size='contain' data-background-image='http://weknowmemes.com/generator/uploads/generated/g1384430524908688634.jpg'>
+					<aside class='notes'>
+						How do you agree with this meme?
+						Heck Yes, Meh, Nope
+						Testing is a QA problem?
+						Heck Yes, Meh, Nope
+					</aside>
+				</section>
+				<section>
+					<section>
+						<h2>Types of Testing</h2>
+						<p class='fragment'>
+							- Unit Testing
+							- Integration Testing
+							- Functional Testing
+							- System Testing
+							- Stress Testing
+							- Performance Testing
+							- Usability Testing
+							- Acceptance Testing
+							- Regression Testing
+						</p>
+						<aside class='notes'>
+							Let's talk types of testing.
+						</aside>
+					</section>
+					<section>
+						<h2>Unit Testing</h2>
+						<p class='fragment'>
+							Testing a specific unit of code
+						</p>
+						<p class='fragment'>
+							Responsible: Dev
+						</p>
+					</section>
+					<section>
+						<h2>Integration Testing</h2>
+						<p class='fragment'>
+							Testing how units of code work together
+						</p>
+						<p class='fragment'>
+							Responsible: Dev
+						</p>
+					</section>
+					<section>
+						<h2>Functional Testing</h2>
+						<p class='fragment'>
+							System functionality requirements are met.
+						</p>
+						<p class='fragment'>
+							Responsible: QA
+						</p>
+					</section>
+					<section>
+						<h2>Performance Testing</h2>
+						<p class='fragment'>
+							Testing how quickly things are working
+						</p>
+						<p class='fragment'>
+							Responsible: DevOps, Dev
+						</p>
+					</section>
+				</section>
+				<section>
+					<h2>Why unit test?</h2>
+					<p class='fragment'>
+						Encourages smaller and more modular code?
+					</p>
+					<p class='fragment'>
+						Built in documentation
+					</p>
+					<p class='fragment'>
+						More robust (less brittle) code base.
+					</p>
+					<p class='fragment'>
+						Easier to extend and refactor
+					</p>
+				</section>
+				<section>
+					<section>
+						<h2>What to unit test?</h2>
+					</section>
+					<section data-background-size='contain' data-background-image='http://m.memegen.com/f14kph.jpg'>
+						<aside class='notes'>
+							It's a wild world out there.
+						</aside>
+					</section>
+					<section data-background-size='contain' data-background-image='https://i0.wp.com/qualitycoding.org/jrwp/wp-content/uploads/2016/03/Yo-Dawg.jpg?resize=570%2C370'>
+						<aside class='notes'>
+							We don't want to have to maintain an extra code bases.
+						</aside>
+					</section>
+					<section>
+						<h2>Three Rules</h2>
+						<p class='fragment'>
+							1. Will the test exactly duplicate the code it is meant to test?
+						</p>
+						<p class='fragment'>
+							2. Will the test duplicate behavior already covered by library code?
+						</p>
+						<p class='fragment'>
+							3. Does what I am testing matter to the component's public API? (Contract Testing)
+						</p>
+					</section>
+					<section>
+						<h2>Contract Based Testing</h2>
+						<p class=fragment>
+							What is the contract associated with this piece of code? What is expected of it? What affects that contract?
+						</p>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Example:</h2>
+					</section>
+					<section>
+						<pre>
+							<code>
+export const getInitials = (name) => {
+  if (!name) {
+    return '';
+  }
+  let ownerName = _.compact(_.pull(_.split(name, ' '), 'true', 'false'));
+  return `${_.head(ownerName[0])}${_.head(ownerName[ownerName.length - 1])}`.toUpperCase();
+};
+
+export const Avatar = (props) => {
+
+  const { size, name, profileImage, hovering } = props;
+
+  const initialsStyle = {
+    fontSize: size / 2
+  };
+
+  const avatarStyle = {
+    width: size,
+    height: size,
+    minWidth: size,
+    lineHeight: `${size}px`
+  };
+
+  return (
+    <div className={cx('avatar', {'hovering': hovering}, {'hasImage': profileImage})}  style={avatarStyle}>
+      {profileImage ?
+       <div><img src={profileImage}/></div>
+       :
+       <div style={initialsStyle}>{getInitials(name)}</div>
+      }
+    </div>
+  );
+};
+							</code>
+						</pre>
+					</section>
+					<section>
+						<h2>Component Contracts</h2>
+						<p class='fragment'>
+							Render
+						</p>
+						<p class='fragment'>
+							Conditionally render based on props
+						</p>
+						<p class='fragment'>
+							Take a string and genereate initials from it.
+						</p>
+					</section>
+					<section>
+						<pre>
+<code>
+import React from 'react';
+import { expect, assert } from 'chai';
+import { shallow } from 'enzyme';
+import { Avatar, getInitials } from './Avatar';
+
+const wrapper = shallow(<Avatar/>);
+
+describe('(Component) Avatar', () => {
+  it('<Avatar /> renders', () => {
+    expect(wrapper).to.have.lengthOf(1);
+  });
+  describe('(Function) getInitials', () => {
+    it('getInitials is a function', () => {
+      assert.typeOf(getInitials, 'function', 'we have a function');
+    });
+    const name = 'GoGrow Dev';
+    it('which should return turn GoGrow Dev into GD', () => {
+      assert.equal('GD', getInitials(name));
+    });
+    const trueName = 'Account Name true true';
+    it('should filter out true vaules', () => {
+      assert.equal('AN', getInitials((trueName)));
+    });
+    const falseName = 'Account Name false false';
+    it('should filter out false values', () => {
+      assert.equal('AN', getInitials(falseName));
+    });
+    const trueFalseName = 'Account Name true false';
+    it('should filter out true and false', () => {
+      assert.equal('AN', getInitials(trueFalseName));
+    });
+  });
+});
+							</code>
+						</pre>
+					</section>
+					<section>
+						<img src='./lib/img/mocha-passed.png'
+					</section>
+				</section>
+				<section>
+					<h2>Resources:</h2>
+					<ul>
+						<li>
+							<a href='https://www.codeproject.com/Tips/351122/What-is-software-testing-What-are-the-different-ty'>What is software testing.</a>
+						</li>
+						<li>
+							<a href='https://medium.freecodecamp.com/the-right-way-to-test-react-components-548a4736ab22'>The right way to test React.</a>
+						</li>
+					</ul>
+
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
